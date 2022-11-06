@@ -1,0 +1,176 @@
+---
+title: "Data Wrangling and Analysis in R"
+output: html_notebook
+---
+
+
+## 1. Installing packages 
+In R, packages are a collection of functions that provide functinalities not given by the R core functionalities. We'll install tidyverse packages which will provide us with packages for performing data manipulation and analysis.
+
+#### Let's install tidyverse packages in Rstudio
+```{r}
+install.packages("tidyverse")
+```
+
+#### Load tidyverse for use in our notebook
+```{r}
+library(tidyverse)
+```
+
+## 2. Data Importation
+
+```{r}
+# a. Importing from a CSV file from URL and loading the entire dataframe.
+
+MTN_df <- read_csv("https://bit.ly/2ZlpzjF")
+MTN_df
+```
+## 3. Data Understanding
+
+
+```{r}
+# We can preview a specific number of records by passing a second argument to the head() function:
+
+head(MTN_df, 10)
+```
+
+```{r}
+# To preview the last 6 records of a dataset, we use the tail function, padding the dataframe name as the only argument.
+
+tail(MTN_df)
+```
+
+```{r}
+# The `glimpse()` function displays the variable names, datatypes and first few records of the dataset.
+
+glimpse(MTN_df)
+
+```
+```{r}
+# In addition to what was printed using the glimpse function, if we want to display more information about the datatypes we can use the `str()` function and pass the dataframe name as the only argument.
+
+str(MTN_df)
+```
+
+
+```{r}
+# Sometimes we might want to preview an unbiased number of dataset records. We use the sample_n() function and pass the dataframe name and number of samples as the arguments. 
+
+sample_n(MTN_df, 10)
+```
+
+```{r}
+# Lastly, to quickly check the size of the dataset without displaying additional information, we use the `dim ()` function, passing the dataframe name as the only argument.
+
+dim(MTN_df)
+```
+
+## 4. Performing Standardisation
+
+```{r}
+# Get column names of the data dataset
+names(MTN_df)
+```
+
+
+
+```{r}
+# Strip the leading and trailing spaces
+names(MTN_df) <- trimws(names(MTN_df), which = c("both"))
+names(MTN_df)
+```
+
+```{r}
+# As a standard while working with colunn names we usually use lowercase characters. Let's transform all column names to have lowercase characters using the `tolower()` function. We pass a vector containing the column names to the function.
+names(MTN_df) <- tolower(names(MTN_df))
+names(MTN_df)
+```
+
+## 5. Handling Irrelevant Data
+
+```{r}
+# Let's drop the monthlycharges and totalcharges columns
+
+MTN_df = select(MTN_df, -c("monthlycharges", "totalcharges"))
+head(MTN_df)
+```
+
+
+
+## 6. Finding and dealing with Duplicates 
+
+Sometimes duplicates can mislead our analysis. Let's find and then leave the out from our data analysis dataset.
+
+```{r}
+# Let's determine the number of records using dim()
+dim(MTN_df)
+```
+
+```{r}
+# To extract the duplicated records from the dataset, we use x[duplicated(x),], where x is the dataframe name.
+
+MTN_df[duplicated(MTN_df), ]
+```
+
+```{r}
+# If we don't want to extract records which are not duplicates we add a logical negation `!` infront of the duplicated function.
+MTN_df[!duplicated(MTN_df), ]
+
+
+```
+
+
+## 7. Missing data
+
+To avoid wrong data analysis conclusions, we find and deal with missing data.
+
+
+```{r}
+# We use the `is.na()` function to identify missing data and pass the dataframe. The output given has TRUE or FALSE to represent whether the value is missing or not.
+is.na(MTN_df)
+
+```
+
+```{r}
+# To find the total missing values in each column we use the `colSums()` function and pass is.na(dt) as the argument and where `dt` is the dataframe.
+
+colSums(is.na(MTN_df))
+```
+
+# Drop all rows containing missing values.
+```{r}
+# We can drop all records containing missing values using the na.omit() function and passing the dataframe name as the argument.
+na.omit(MTN_df)
+
+```
+## QUESTION 1. total number of retained and churned customers
+
+```{r}
+## total number of churned customers
+#filter(MTN_df, churn =='Yes')
+count(MTN_df, churn)
+```
+
+
+
+## QUESTION 2. average tenure:how long they have been customers
+```{r}
+MTN_df %>%
+  group_by(gender, churn) %>%
+  summarize(Average_tenure = mean(tenure))
+
+```
+
+
+## QUESTION 3. demographics-age and gender
+```{r}
+##Churn by age and gender
+MTN_df %>%
+  filter (churn == 'Yes')%>%
+  group_by(gender,seniorcitizen) %>%
+  summarize(Total_Churn = length(churn))
+```
+
+
+
+
